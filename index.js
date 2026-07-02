@@ -16,6 +16,13 @@ async function startBot() {
         const collection = client.db('vibe-bot').collection('session');
         const { state, saveCreds } = await useMongoDBAuthState(collection);
 
+        console.log({
+            noiseKey: state.creds.noiseKey?.private?.constructor?.name,
+            signedKey: state.creds.signedIdentityKey?.private?.constructor?.name,
+            pairingKey: state.creds.pairingEphemeralKeyPair?.private?.constructor?.name,
+            registered: state.creds.registered
+        });
+
         const sock = makeWASocket({
             logger: pino({ level: 'silent' }),
             auth: state,
