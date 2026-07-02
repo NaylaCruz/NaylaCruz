@@ -1,0 +1,28 @@
+{
+  "name": "naylacruz",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NaylaCruz/NaylaCruz.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/NaylaCruz/NaylaCruz/issues"
+  },
+  "homepage": "https://github.com/NaylaCruz/NaylaCruz#readme",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@whiskeysockets/baileys": "^7.0.0-rc13",
+    "dotenv": "^17.4.2",
+    "mongodb": "^7.4.0",
+    "pino": "^10.3.1"
+  }
+}
