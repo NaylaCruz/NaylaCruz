@@ -3,6 +3,9 @@ const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = requi
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const pino = require('pino');
 
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
 async function startBot() {
     const { state, saveCreds } = await useMultiFileAuthState('./session');
 
@@ -21,22 +24,26 @@ async function startBot() {
                 startBot();
             }
         } else if (connection === 'open') {
-            console.log('Bot is connected successfully!');
+            console.log('Bot is online!');
         }
     });
 
-    if (!sock.authState.creds.registered) {
-        console.log("Waiting for stable connection...");
-        setTimeout(async () => {
-            try {
-                const code = await sock.requestPairingCode("2349019598495");
-                console.log(`\n\n************************************\nYOUR PAIRING CODE: ${code}\n************************************\n`);
-            } catch (err) {
-                console.log("Could not request code yet, waiting for next cycle.");
-            }
-        }, 15000);
-    } else {
-        console.log("Session found! Bot is already registered.");
-    }
+    sock.ev.on('messages.upsert', async (m) => {
+        const msg = m.messages[0];
+        if (!msg.message || msg.key.fromMe || msg.key.remoteJid === 'status@broadcast') return;
+
+        const text = msg.message.conversation || msg.message.extendedTextMessage?.text;
+        if (!text) return;
+
+        await sock.sendPresenceUpdate('composing', msg.key.remoteJid);
+        
+        try {
+            const result = await model.generateContent(text);
+            const response = result.response.text();
+            await sock.sendMessage(msg.key.remoteJid, { text: response });
+        } catch (err) {
+            console.error("AI Error:", err);
+        }
+    });
 }
 startBot();
