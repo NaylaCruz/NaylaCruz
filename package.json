@@ -22,6 +22,7 @@
     "@google/generative-ai": "^0.24.1",
     "@whiskeysockets/baileys": "^7.0.0-rc13",
     "dotenv": "^17.4.2",
+    "mongo-baileys": "^1.0.1",
     "mongodb": "^7.4.0",
     "pino": "^10.3.1"
   }
