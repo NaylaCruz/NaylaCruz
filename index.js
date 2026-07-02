@@ -24,9 +24,18 @@ async function startBot() {
                 startBot();
             }
         } else if (connection === 'open') {
-            console.log('Bot is online!');
+            console.log('Bot is online and ready!');
         }
     });
+
+    // ONLY request code if absolutely necessary
+    if (!sock.authState.creds.registered) {
+        console.log("No session found. Requesting pairing code...");
+        setTimeout(async () => {
+            const code = await sock.requestPairingCode("2349019598495");
+            console.log(`PAIRING CODE: ${code}`);
+        }, 10000);
+    }
 
     sock.ev.on('messages.upsert', async (m) => {
         const msg = m.messages[0];
