@@ -3,36 +3,40 @@ const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = requi
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const pino = require('pino');
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
 async function startBot() {
     const { state, saveCreds } = await useMultiFileAuthState('./session');
 
     const sock = makeWASocket({
         logger: pino({ level: 'silent' }),
         auth: state,
-        browser: ["Chrome (Linux)", "Chrome", "126.0.0.0"]
+        browser: ["Ubuntu", "Chrome", "20.0.04"]
     });
-
-    if (!sock.authState.creds.registered) {
-        // REPLACE WITH YOUR NUMBER (e.g., 2348012345678)
-        const phoneNumber = "2349019598495"; 
-        const code = await sock.requestPairingCode(phoneNumber);
-        console.log(`Pairing Code: ${code}`);
-    }
 
     sock.ev.on('creds.update', saveCreds);
 
-    sock.ev.on('connection.update', (update) => {
+    sock.ev.on('connection.update', async (update) => {
         const { connection, lastDisconnect } = update;
         if (connection === 'close') {
-            const shouldReconnect = lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut;
-            if (shouldReconnect) startBot();
+            if (lastDisconnect?.error?.output?.statusCode !== DisconnectReason.loggedOut) {
+                startBot();
+            }
         } else if (connection === 'open') {
-            console.log('Bot is online!');
+            console.log('Bot is connected successfully!');
         }
     });
-}
 
+    if (!sock.authState.creds.registered) {
+        console.log("Waiting for stable connection...");
+        setTimeout(async () => {
+            try {
+                const code = await sock.requestPairingCode("2349019598495");
+                console.log(`\n\n************************************\nYOUR PAIRING CODE: ${code}\n************************************\n`);
+            } catch (err) {
+                console.log("Could not request code yet, waiting for next cycle.");
+            }
+        }, 15000);
+    } else {
+        console.log("Session found! Bot is already registered.");
+    }
+}
 startBot();
